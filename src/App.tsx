@@ -5,9 +5,15 @@ import type { Component } from 'solid-js';
 import StyledContainer, { StyledPage } from './App.style';
 
 import Square from './components/Square/Square';
+import Input from './components/Input/Input';
 
 type Active = {
 	[key: string]: boolean;
+}
+
+export interface InputEvent extends Event {
+	currentTarget: HTMLInputElement;
+	target: Element;
 }
 
 const initialObject = (width:number, height:number) => {
@@ -24,11 +30,12 @@ const initialObject = (width:number, height:number) => {
 }
 
 const App: Component = () => {
-	const width = 5;
-	const height = 7;
+	const [width, setWidth] = createSignal(5);
+	const [height, setHeight] = createSignal(7);
+	const [size] = createSignal(50);
 	const [mouseDown, setMouseDown] = createSignal(false);
 	const [lastAction, setLastAction] = createSignal(true);
-	const [activeObj, setActiveObj] = createSignal<Active>(initialObject(width,height));
+	const [activeObj, setActiveObj] = createSignal<Active>(initialObject(width(),height()));
 
 	const activeArr = () => {
 		return Object.keys(activeObj()).flatMap(key => {
@@ -45,7 +52,7 @@ const App: Component = () => {
 	}
 
 	const onClear = () => {
-		setActiveObj(initialObject(width, height));
+		setActiveObj(initialObject(width(), height()));
 	}
 
 	createEffect(() => {
@@ -57,24 +64,54 @@ const App: Component = () => {
 			setMouseDown(false);
 		});
 	});
+	
+	const onChangeWidth = (e: InputEvent) => {
+		let value = parseInt(e.currentTarget.value);
+		setWidth(value);
+		setActiveObj(initialObject(value, height()));
+	}
+
+	const onChangeHeight = (e: InputEvent) => {
+		let value = parseInt(e.currentTarget.value);
+		setHeight(value);
+		setActiveObj(initialObject(width(), value));
+	}
+
+	const onCopy = () => {
+		let text = '[' + activeArr().join('],[') + ']';
+		navigator.clipboard.writeText(text);
+	}
 
 	return (
 		<StyledPage>
-			<StyledContainer width={width} height={height}>
+			<div>
+				<Input label='Width' type='number' value={width()} onChange={onChangeWidth} min='1' max='20'/>
+				<Input label='Height' type='number' value={height()} onChange={onChangeHeight} min='1' max='20'/>
+			</div>
+			<p>Changing Width or Height will reset the grid.</p>
+			<br/>
+			<StyledContainer width={width()} height={height()} size={size()}>
 				<For each={Object.keys(activeObj())}>
 					{
 						(coords) => {
 							let [x,y] = coords.split('-').map(Number);
 							let key = `${x}-${y}`;
-							return <Square x={x} y={y} mouseDown={mouseDown()} lastAction={lastAction()} active={activeObj()[key]} onClick={onClickSquare}/>
+							return <Square x={x} y={y} size={size()}
+										mouseDown={mouseDown()} 
+										lastAction={lastAction()} 
+										active={activeObj()[key]} 
+										onClick={onClickSquare}/>
 						}
 					}
 				</For>
 			</StyledContainer>
 			<br/>
-			<div>[{activeArr().join('],[')}]</div>
+			<div id='arrayText'>[{activeArr().join('],[')}]</div>
 			<br/>
-			<button onClick={onClear}>Clear</button>
+			<div>
+				<button onClick={onCopy}>Copy</button>&nbsp;
+				<button onClick={onClear}>Clear</button>
+			</div>
 		</StyledPage>
 	);
 };

@@ -4,6 +4,7 @@ import StyledSquare from './Square.style';
 export type SquareProps = {
     x: number;
     y: number;
+    size: number;
     active: boolean;
     mouseDown: boolean;
     lastAction: boolean;
@@ -30,7 +31,12 @@ const Square = (props: SquareProps) => {
     }
 
     return (
-        <StyledSquare onmouseover={onMouseOver} x={props.x} y={props.y} active={props.active !== undefined ? props.active : active()} onmousedown={onClick}></StyledSquare>
+        <StyledSquare 
+            onmouseover={onMouseOver} 
+            x={props.x} y={props.y} 
+            size={props.size}
+            active={props.active !== undefined ? props.active : active()} 
+            onmousedown={onClick}/>
     );
 }
 
