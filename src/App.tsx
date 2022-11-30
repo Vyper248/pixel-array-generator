@@ -26,6 +26,8 @@ const initialObject = (width:number, height:number) => {
 const App: Component = () => {
 	const width = 5;
 	const height = 7;
+	const [mouseDown, setMouseDown] = createSignal(false);
+	const [lastAction, setLastAction] = createSignal(true);
 	const [activeObj, setActiveObj] = createSignal<Active>(initialObject(width,height));
 
 	const activeArr = () => {
@@ -39,17 +41,22 @@ const App: Component = () => {
 		let currentActive = {...activeObj()};
 		currentActive[`${x}-${y}`] = active;
 		setActiveObj(currentActive);
+		setLastAction(active);
 	}
 
 	const onClear = () => {
 		setActiveObj(initialObject(width, height));
 	}
 
-	// createEffect(() => {
-	// 	window.addEventListener('mousedown', () => {
-			
-	// 	});
-	// });
+	createEffect(() => {
+		window.addEventListener('mousedown', () => {
+			setMouseDown(true);
+		});
+
+		window.addEventListener('mouseup', () => {
+			setMouseDown(false);
+		});
+	});
 
 	return (
 		<StyledPage>
@@ -59,7 +66,7 @@ const App: Component = () => {
 						(coords) => {
 							let [x,y] = coords.split('-').map(Number);
 							let key = `${x}-${y}`;
-							return <Square x={x} y={y} active={activeObj()[key]} onClick={onClickSquare}/>
+							return <Square x={x} y={y} mouseDown={mouseDown()} lastAction={lastAction()} active={activeObj()[key]} onClick={onClickSquare}/>
 						}
 					}
 				</For>

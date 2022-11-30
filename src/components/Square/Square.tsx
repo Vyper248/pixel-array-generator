@@ -5,6 +5,8 @@ export type SquareProps = {
     x: number;
     y: number;
     active: boolean;
+    mouseDown: boolean;
+    lastAction: boolean;
     onClick: (x:number, y:number, active:boolean) => void;
 }
 
@@ -20,8 +22,15 @@ const Square = (props: SquareProps) => {
         setActive(!active());
     }
 
+    const onMouseOver = () => {
+        if (props.mouseDown) {
+            props.onClick(props.x, props.y, props.lastAction);
+            setActive(props.lastAction);
+        }
+    }
+
     return (
-        <StyledSquare x={props.x} y={props.y} active={props.active !== undefined ? props.active : active()} onClick={onClick}></StyledSquare>
+        <StyledSquare onmouseover={onMouseOver} x={props.x} y={props.y} active={props.active !== undefined ? props.active : active()} onmousedown={onClick}></StyledSquare>
     );
 }
 
